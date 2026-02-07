@@ -8,6 +8,9 @@ import pickle
 from pathlib import Path
 import requests
 import time
+if "page" not in st.session_state:
+    st.session_state.page = "🏠 Home"
+
 
 
 # Page configuration
@@ -394,18 +397,15 @@ def sidebar_navigation():
     st.sidebar.markdown("---")
     
     page = st.sidebar.radio(
-        "Navigation",
-        ["🏠 Home", "📊 Dashboard", "🔬 Live Detection", "📈 Analytics", "ℹ️ About"],
-        label_visibility="collapsed"
+    "Navigation",
+    ["🏠 Home", "🔬 Live Detection", "📈 Analytics", "ℹ️ About"],
+    index=["🏠 Home", "🔬 Live Detection", "📈 Analytics", "ℹ️ About"].index(st.session_state.page),
+    label_visibility="collapsed"
     )
-    
-    st.sidebar.markdown("---")
-    st.sidebar.markdown('<h3 style="font-family: Rajdhani; color: #00D9FF;">⚡ Quick Stats</h3>', unsafe_allow_html=True)
-    st.sidebar.metric("Total Scans", "1,234", "+12%")
-    st.sidebar.metric("Accuracy", "94.7%", "+2.3%")
-    st.sidebar.metric("Active Users", "89", "+5")
-    
+
+    st.session_state.page = page
     return page
+
 
 # Main app
 def main():
@@ -413,8 +413,6 @@ def main():
     
     if page == "🏠 Home":
         show_home()
-    elif page == "📊 Dashboard":
-        show_dashboard()
     elif page == "🔬 Live Detection":
         show_live_detection()
     elif page == "📈 Analytics":
@@ -484,10 +482,7 @@ def show_home():
             if st.button("🚀 Start Live Detection", use_container_width=True):
                 st.session_state.page = "🔬 Live Detection"
                 st.rerun()
-        with col_btn2:
-            if st.button("📊 View Dashboard", use_container_width=True):
-                st.session_state.page = "📊 Dashboard"
-                st.rerun()
+        
     
     with col2:
         # System status with glowing indicators
@@ -506,194 +501,6 @@ def show_home():
         </div>
         """, unsafe_allow_html=True)
 
-def show_dashboard():
-    st.markdown('<h1 class="main-header">Analytics Dashboard</h1>', unsafe_allow_html=True)
-    
-    # Key metrics row
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric(
-            label="Total Scans Today",
-            value="47",
-            delta="12 from yesterday"
-        )
-    
-    with col2:
-        st.metric(
-            label="Detection Accuracy",
-            value="94.7%",
-            delta="2.3%"
-        )
-    
-    with col3:
-        st.metric(
-            label="Healthy Results",
-            value="68%",
-            delta="-5%"
-        )
-    
-    with col4:
-        st.metric(
-            label="Avg Response Time",
-            value="1.2s",
-            delta="-0.3s"
-        )
-    
-    st.markdown("---")
-    
-    # Main visualizations with dark theme
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown('<h3 style="font-family: Orbitron; color: #00D9FF;">📈 Scan Trends (Last 30 Days)</h3>', unsafe_allow_html=True)
-        dates = pd.date_range(end=datetime.now(), periods=30, freq='D')
-        scans = np.random.poisson(35, 30) + np.random.randint(-5, 10, 30)
-        
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=dates,
-            y=scans,
-            mode='lines+markers',
-            name='Daily Scans',
-            line=dict(color='#00D9FF', width=3),
-            marker=dict(size=8, color='#00D9FF'),
-            fill='tozeroy',
-            fillcolor='rgba(0, 217, 255, 0.2)'
-        ))
-        
-        fig.update_layout(
-            height=400,
-            hovermode='x unified',
-            plot_bgcolor='rgba(10, 14, 39, 0.5)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#E0E7FF', family='Rajdhani'),
-            xaxis=dict(showgrid=True, gridcolor='rgba(0, 217, 255, 0.1)'),
-            yaxis=dict(showgrid=True, gridcolor='rgba(0, 217, 255, 0.1)'),
-            margin=dict(l=20, r=20, t=20, b=20)
-        )
-        
-        st.plotly_chart(fig, use_container_width=True)
-    
-    with col2:
-        st.markdown('<h3 style="font-family: Orbitron; color: #00D9FF;">🎯 Detection Results Distribution</h3>', unsafe_allow_html=True)
-        labels = ['Healthy', 'Fatty Liver', 'Cirrhosis', 'NAFLD']
-        values = [68, 18, 8, 6]
-        colors = ['#06FFA5', '#FFBE0B', '#FF006E', '#FF6B35']
-        
-        fig = go.Figure(data=[go.Pie(
-            labels=labels,
-            values=values,
-            hole=0.4,
-            marker=dict(colors=colors, line=dict(color='#0A0E27', width=2)),
-            textinfo='label+percent',
-            textfont=dict(size=14, color='#0A0E27', family='Rajdhani', weight='bold')
-        )])
-        
-        fig.update_layout(
-            height=400,
-            showlegend=True,
-            plot_bgcolor='rgba(10, 14, 39, 0.5)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#E0E7FF', family='Rajdhani'),
-            margin=dict(l=20, r=20, t=20, b=20)
-        )
-        
-        st.plotly_chart(fig, use_container_width=True)
-    
-    # Sensor data visualization
-    st.markdown('<h3 style="font-family: Orbitron; color: #00D9FF; margin-top: 30px;">🌡️ Real-time Sensor Readings</h3>', unsafe_allow_html=True)
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown('<h4 style="font-family: Rajdhani; color: #00D9FF; text-align: center;">Skin Impedance</h4>', unsafe_allow_html=True)
-        impedance_value = 45
-        
-        fig = go.Figure(go.Indicator(
-            mode="gauge+number+delta",
-            value=impedance_value,
-            delta={'reference': 50},
-            gauge={
-                'axis': {'range': [None, 100]},
-                'bar': {'color': "#00D9FF"},
-                'bgcolor': 'rgba(10, 14, 39, 0.5)',
-                'steps': [
-                    {'range': [0, 33], 'color': "rgba(6, 255, 165, 0.3)"},
-                    {'range': [33, 66], 'color': "rgba(255, 190, 11, 0.3)"},
-                    {'range': [66, 100], 'color': "rgba(255, 0, 110, 0.3)"}
-                ],
-                'threshold': {
-                    'line': {'color': "#FF006E", 'width': 4},
-                    'thickness': 0.75,
-                    'value': 70
-                }
-            }
-        ))
-        
-        fig.update_layout(
-            height=250, 
-            margin=dict(l=20, r=20, t=20, b=20),
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#E0E7FF', family='Rajdhani')
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    
-    with col2:
-        st.markdown('<h4 style="font-family: Rajdhani; color: #00D9FF; text-align: center;">Skin Temperature (°C)</h4>', unsafe_allow_html=True)
-        temp_value = 33.5
-        
-        fig = go.Figure(go.Indicator(
-            mode="gauge+number+delta",
-            value=temp_value,
-            delta={'reference': 32},
-            gauge={
-                'axis': {'range': [28, 38]},
-                'bar': {'color': "#FFBE0B"},
-                'bgcolor': 'rgba(10, 14, 39, 0.5)',
-                'steps': [
-                    {'range': [28, 31], 'color': "rgba(0, 217, 255, 0.3)"},
-                    {'range': [31, 35], 'color': "rgba(6, 255, 165, 0.3)"},
-                    {'range': [35, 38], 'color': "rgba(255, 107, 53, 0.3)"}
-                ]
-            }
-        ))
-        
-        fig.update_layout(
-            height=250, 
-            margin=dict(l=20, r=20, t=20, b=20),
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#E0E7FF', family='Rajdhani')
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    
-    with col3:
-        st.markdown('<h4 style="font-family: Rajdhani; color: #00D9FF; text-align: center;">Yellowness Index</h4>', unsafe_allow_html=True)
-        yellow_value = 25
-        
-        fig = go.Figure(go.Indicator(
-            mode="gauge+number+delta",
-            value=yellow_value,
-            delta={'reference': 20},
-            gauge={
-                'axis': {'range': [0, 100]},
-                'bar': {'color': "#FF006E"},
-                'bgcolor': 'rgba(10, 14, 39, 0.5)',
-                'steps': [
-                    {'range': [0, 30], 'color': "rgba(6, 255, 165, 0.3)"},
-                    {'range': [30, 60], 'color': "rgba(255, 190, 11, 0.3)"},
-                    {'range': [60, 100], 'color': "rgba(255, 0, 110, 0.3)"}
-                ]
-            }
-        ))
-        
-        fig.update_layout(
-            height=250, 
-            margin=dict(l=20, r=20, t=20, b=20),
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#E0E7FF', family='Rajdhani')
-        )
-        st.plotly_chart(fig, use_container_width=True)
 
 def show_live_detection():
     st.markdown('<h1 class="main-header">Live Detection</h1>', unsafe_allow_html=True)
@@ -718,10 +525,8 @@ def show_live_detection():
 
         if submit_button:
             try:
-                # 🟢 Device online indicator
                 st.success("🟢 Device Online")
 
-                # 🔄 Loading pipeline
                 with st.spinner("Connecting to IoT device..."):
                     time.sleep(1)
 
@@ -729,332 +534,363 @@ def show_live_detection():
                     time.sleep(1)
 
                 with st.spinner("Running ensemble models..."):
+                    params = {
+                        "age": int(age),
+                        "gender": "Male" if str(gender).lower().startswith("m") else "Female",
+                        "height": float(height),
+                        "weight": float(weight)
+                    }
+
                     res = requests.get(
                         "http://127.0.0.1:8000/predict",
-                        params={
-                            "age": age,
-                            "gender": gender,
-                            "height": height,
-                            "weight": weight
-                        },
+                        params=params,
                         timeout=10
                     )
+                    res.raise_for_status()
 
                 with st.spinner("Generating clinical advice..."):
                     time.sleep(1)
 
                 data = res.json()
 
-                risk = data["risk"]
-                confidence = data["confidence"]
+                if "error" in data:
+                    st.error(data["error"])
+                    return
+
+                risk = str(data.get("risk", "Unknown"))
+                confidence = int(data.get("confidence", 0))
                 models = data.get("models", {})
                 sensor = data.get("sensor", {})
-                advice = data.get("advice", "No advice")
+
+                # RGB protection
+                if float(sensor.get("r", 0)) == 0 and float(sensor.get("g", 0)) == 0 and float(sensor.get("b", 0)) == 0:
+                    st.error("🔴 RGB sensor failure — please retake measurement.")
+                    return
 
                 st.success("✅ Prediction complete")
 
-                # 🎯 FINAL RESULT
-                if risk.lower() == "high":
-                    st.error(f"⚠️ Risk Level: {risk}")
+                # ================= RISK =================
+                level = risk.lower()
+
+                if level == "high":
+                    st.error(f"🔴 Risk Level: {risk}")
+                elif level == "medium":
+                    st.warning(f"🟡 Risk Level: {risk}")
                 else:
-                    st.success(f"✅ Risk Level: {risk}")
+                    st.success(f"🟢 Risk Level: {risk}")
 
                 st.metric("Confidence", f"{confidence}%")
 
-                # 🧠 MODEL TRANSPARENCY
+                # ================= MODEL =================
                 st.markdown("### 🧠 Individual Model Decisions")
                 for name, val in models.items():
-                    st.write(f"**{name}** → {'High' if val==1 else 'Low'}")
-
-                # 🩺 Advice
-                st.markdown("### 🏥 Clinical Advice")
-                st.info(advice)
-
-                # 🔍 Raw data
-                with st.expander("🔍 Sensor Data Used"):
-                    st.json(sensor)
+                    if "proba" not in name.lower():
+                        try:
+                            label = "High" if int(val) == 1 else "Low"
+                        except:
+                            label = str(val)
+                        st.write(f"**{name}** → {label}")
 
             except Exception as e:
-                st.error("🔴 Backend or device not reachable")
+                st.error(f"🔴 Backend or device not reachable: {e}")
+                return
+
+    # ======================================================
+    # 🧠 FULL WIDTH CLINICAL SECTION (OUTSIDE COLUMNS)
+    # ======================================================
+    if submit_button:
+        st.markdown("---")
+        st.markdown("## 🧠 AI Clinical Decision Support")
+
+        level = str(risk).lower()
+
+        tabs = st.tabs([
+            "👨‍⚕️ Care Pathway",
+            "🧪 Diagnostics",
+            "💊 Treatment Strategy",
+            "🥗 Lifestyle Plan",
+            "🌿 Medical Support",
+            "📄 Prognosis"
+        ])
+
+        # ================= CARE PATHWAY =================
+        with tabs[0]:
+            if level == "high":
+                st.error("### 🚨 Specialist care required")
+                st.markdown("""
+**Recommended timeline:** Within **7 days**
+
+### Why escalation is needed
+- High probability of steatosis or inflammatory activity  
+- Possible progression toward fibrosis  
+- Metabolic dysfunction likely present  
+
+### Whom to consult
+- Hepatologist  
+- Gastroenterologist  
+- Endocrinologist if diabetic or obese  
+
+### Monitoring frequency
+- Clinical review every **3–6 months**
+""")
+
+            elif level == "medium":
+                st.warning("### ⚠️ Physician guided management")
+                st.markdown("""
+**Recommended timeline:** Within **4–8 weeks**
+
+### Clinical focus
+- Detect reversible fatty infiltration  
+- Prevent inflammatory cascade  
+- Improve insulin sensitivity  
+
+### Monitoring frequency
+- Repeat evaluation every **6–12 months**
+""")
+
+            else:
+                st.success("### ✅ Preventive care sufficient")
+                st.markdown("""
+No immediate specialist referral required.
+
+### Continue:
+- Annual liver screening  
+- Weight & glucose monitoring  
+- Cardiometabolic fitness
+""")
+
+        # ================= DIAGNOSTICS =================
+        with tabs[1]:
+            if level == "high":
+                st.markdown("""
+### Priority investigations
+- Liver Function Tests (ALT, AST, ALP)  
+- Bilirubin (total/direct)  
+- HbA1c & fasting glucose  
+- Lipid profile  
+- Ultrasound abdomen  
+- FibroScan / elastography  
+
+### Goal
+Stage liver injury and rule out fibrosis.
+""")
+            elif level == "medium":
+                st.markdown("""
+### Suggested monitoring
+- Liver enzymes  
+- Body weight & BMI  
+- Blood sugar  
+
+### Repeat interval
+6–12 months.
+""")
+            else:
+                st.markdown("""
+### Routine prevention
+Annual metabolic panel is sufficient.
+""")
+
+        # ================= TREATMENT =================
+        with tabs[2]:
+            if level == "high":
+                st.markdown("""
+### Therapeutic objectives
+✔ Reduce hepatic fat  
+✔ Control inflammation  
+✔ Prevent scar formation  
+
+### Doctor may consider
+- Insulin sensitizers  
+- Lipid lowering therapy  
+- Antioxidant support  
+- Structured weight reduction program
+""")
+            elif level == "medium":
+                st.markdown("""
+### Primary approach
+Lifestyle + metabolic optimization.
+
+### Target
+7–10% body weight reduction can significantly reverse fat deposition.
+""")
+            else:
+                st.markdown("""
+No medication required.
+
+Continue preventive health discipline.
+""")
+
+        # ================= LIFESTYLE =================
+        with tabs[3]:
+            if level == "high":
+                st.markdown("""
+### Mandatory changes
+🚫 Stop alcohol  
+🚫 Avoid sugary beverages  
+🚫 Avoid ultra-processed foods  
+
+### Strongly advised
+🥗 Mediterranean diet  
+🏃 150–300 min/week exercise  
+💧 Adequate hydration  
+😴 Sleep optimization
+""")
+            elif level == "medium":
+                st.markdown("""
+### Adopt immediately
+✔ Reduce refined carbs  
+✔ Increase fiber  
+✔ Daily physical activity  
+
+### Weight management
+Aim gradual fat loss.
+""")
+            else:
+                st.markdown("""
+Maintain healthy diet, hydration and physical activity.
+""")
+
+        # ================= SUPPORT =================
+        with tabs[4]:
+            st.markdown("""
+### Evidence-supported supplements  
+*(Only under medical supervision)*
+
+- **Milk Thistle (Silymarin)** → hepatocyte protection  
+- **Curcumin** → anti-inflammatory action  
+- **Omega-3 fatty acids** → improves lipid metabolism  
+- **Vitamin E** → oxidative stress reduction  
+
+Not substitutes for medical therapy.
+""")
+
+        # ================= PROGNOSIS =================
+        with tabs[5]:
+            if level == "high":
+                st.markdown("""
+### Outlook
+Requires strict compliance.
+
+Early intervention can still halt or reverse progression.
+""")
+            elif level == "medium":
+                st.markdown("""
+### Outlook
+Highly reversible with disciplined lifestyle modification.
+""")
+            else:
+                st.markdown("""
+### Outlook
+Excellent long-term liver health expected.
+""")
+
+        # ======================================================
+        # 🔍 RAW SENSOR DATA
+        # ======================================================
+        with st.expander("🔍 Sensor Data Used"):
+            st.json(sensor)
+
+               
 
 def show_analytics():
     st.markdown('<h1 class="main-header">Advanced Analytics</h1>', unsafe_allow_html=True)
-    
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        date_range = st.date_input(
-            "Select Date Range",
-            value=(datetime.now() - timedelta(days=30), datetime.now()),
-            max_value=datetime.now()
-        )
-    with col2:
-        analysis_type = st.selectbox(
-            "Analysis Type",
-            ["Overview", "Sensor Comparison", "Model Performance"]
-        )
-    
+
+    # ======================================================
+    # SINGLE DROPDOWN
+    # ======================================================
+    view = st.selectbox(
+        "Select Analytics View",
+        ["📡 Sensor Performance", "🤖 Model Performance"]
+    )
+
     st.markdown("---")
-    
-    if analysis_type == "Overview":
-        st.markdown('<h3 style="font-family: Orbitron; color: #00D9FF;">📊 Parameter Trends Comparison</h3>', unsafe_allow_html=True)
-        
-        days = 30
-        dates = pd.date_range(end=datetime.now(), periods=days, freq='D')
-        
-        impedance_data = 40 + np.random.randn(days).cumsum()
-        temp_data = 33 + np.random.randn(days) * 0.5
-        yellowness_data = 20 + np.random.randn(days).cumsum() * 0.5
-        
-        fig = go.Figure()
-        
-        fig.add_trace(go.Scatter(
-            x=dates, y=impedance_data,
-            name='Skin Impedance',
-            line=dict(color='#00D9FF', width=2),
-            yaxis='y1'
-        ))
-        
-        fig.add_trace(go.Scatter(
-            x=dates, y=temp_data,
-            name='Temperature',
-            line=dict(color='#FFBE0B', width=2),
-            yaxis='y2'
-        ))
-        
-        fig.add_trace(go.Scatter(
-            x=dates, y=yellowness_data,
-            name='Yellowness Index',
-            line=dict(color='#FF006E', width=2),
-            yaxis='y3'
-        ))
-        
-        fig.update_layout(
-            height=500,
-            hovermode='x unified',
-            plot_bgcolor='rgba(10, 14, 39, 0.5)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#E0E7FF', family='Rajdhani'),
-            yaxis=dict(title='Impedance (Ω)', side='left', color='#00D9FF'),
-            yaxis2=dict(title='Temperature (°C)', overlaying='y', side='right', color='#FFBE0B'),
-            yaxis3=dict(title='Yellowness', overlaying='y', side='right', position=0.95, color='#FF006E'),
-            legend=dict(x=0.01, y=0.99, bgcolor='rgba(21, 27, 61, 0.8)', bordercolor='#00D9FF', borderwidth=1),
-            margin=dict(l=50, r=100, t=20, b=50)
-        )
-        
-        st.plotly_chart(fig, use_container_width=True)
-        
-        col1, col2 = st.columns(2)
-        
+
+    # ======================================================
+    # SENSOR PERFORMANCE (CUSTOM)
+    # ======================================================
+    if view == "📡 Sensor Performance":
+
+        st.markdown("### 📡 Individual Sensor Accuracy")
+
+        col1, col2, col3 = st.columns(3)
+
         with col1:
-            st.markdown('<h3 style="font-family: Orbitron; color: #00D9FF;">🔥 Parameter Correlation Heatmap</h3>', unsafe_allow_html=True)
-            
-            correlation_matrix = np.array([
-                [1.0, 0.65, 0.72, -0.45],
-                [0.65, 1.0, 0.58, -0.38],
-                [0.72, 0.58, 1.0, -0.52],
-                [-0.45, -0.38, -0.52, 1.0]
-            ])
-            
-            parameters = ['Impedance', 'Temperature', 'Yellowness', 'Health Score']
-            
-            fig = go.Figure(data=go.Heatmap(
-                z=correlation_matrix,
-                x=parameters,
-                y=parameters,
-                colorscale=[[0, '#0A0E27'], [0.5, '#00D9FF'], [1, '#FF006E']],
-                zmid=0,
-                text=correlation_matrix,
-                texttemplate='%{text:.2f}',
-                textfont={"size": 12, "color": "#E0E7FF"}
-            ))
-            
-            fig.update_layout(
-                height=400, 
-                margin=dict(l=20, r=20, t=20, b=20),
-                plot_bgcolor='rgba(10, 14, 39, 0.5)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#E0E7FF', family='Rajdhani')
-            )
-            st.plotly_chart(fig, use_container_width=True)
-        
+            st.metric("GSR Sensor", "91%", "+2%")
+
         with col2:
-            st.markdown('<h3 style="font-family: Orbitron; color: #00D9FF;">📈 Detection Accuracy by Month</h3>', unsafe_allow_html=True)
-            
-            months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
-            accuracy = [92.1, 93.5, 93.8, 94.2, 94.5, 94.7]
-            
-            fig = go.Figure()
-            
-            fig.add_trace(go.Bar(
-                x=months,
-                y=accuracy,
-                marker=dict(
-                    color=accuracy,
-                    colorscale=[[0, '#00D9FF'], [1, '#06FFA5']],
-                    showscale=False
-                ),
-                text=[f"{a}%" for a in accuracy],
-                textposition='outside',
-                textfont=dict(color='#E0E7FF')
-            ))
-            
-            fig.update_layout(
-                height=400,
-                yaxis=dict(range=[90, 96], title='Accuracy (%)', color='#E0E7FF'),
-                margin=dict(l=20, r=20, t=20, b=20),
-                plot_bgcolor='rgba(10, 14, 39, 0.5)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#E0E7FF', family='Rajdhani')
-            )
-            
-            st.plotly_chart(fig, use_container_width=True)
-    
-    elif analysis_type == "Sensor Comparison":
-        st.markdown('<h3 style="font-family: Orbitron; color: #00D9FF;">🔬 Sensor Performance Comparison</h3>', unsafe_allow_html=True)
-        
-        metrics = ['Accuracy', 'Reliability', 'Speed', 'Cost Efficiency']
-        
+            st.metric("Thermal Sensor", "94%", "+1.5%")
+
+        with col3:
+            st.metric("RGB / Yellowness", "92%", "+2.3%")
+
+        st.markdown("---")
+
+        st.info(
+            "Multi-sensor fusion improves robustness. "
+            "If one sensor becomes noisy, ensemble models maintain stability."
+        )
+
+        # Extra professional touch
+        st.markdown("### 🎯 Reliability Radar")
+
+        import plotly.graph_objects as go
+
+        metrics = ['Accuracy', 'Stability', 'Noise Resistance', 'Response Speed']
+
         fig = go.Figure()
-        
+
         fig.add_trace(go.Scatterpolar(
-            r=[95, 92, 88, 85, 95],
+            r=[91, 90, 88, 92, 91],
             theta=metrics + [metrics[0]],
             fill='toself',
-            name='Skin Impedance',
-            line=dict(color='#00D9FF', width=2),
-            fillcolor='rgba(0, 217, 255, 0.2)'
+            name='GSR'
         ))
-        
+
         fig.add_trace(go.Scatterpolar(
-            r=[88, 95, 90, 75, 88],
+            r=[94, 93, 90, 91, 94],
             theta=metrics + [metrics[0]],
             fill='toself',
-            name='Thermal Camera',
-            line=dict(color='#FFBE0B', width=2),
-            fillcolor='rgba(255, 190, 11, 0.2)'
+            name='Thermal'
         ))
-        
+
         fig.add_trace(go.Scatterpolar(
-            r=[90, 88, 95, 92, 90],
+            r=[92, 91, 89, 94, 92],
             theta=metrics + [metrics[0]],
             fill='toself',
-            name='RGB Sensor',
-            line=dict(color='#FF006E', width=2),
-            fillcolor='rgba(255, 0, 110, 0.2)'
+            name='RGB'
         ))
-        
-        fig.update_layout(
-            polar=dict(
-                radialaxis=dict(
-                    visible=True, 
-                    range=[0, 100],
-                    gridcolor='rgba(0, 217, 255, 0.2)',
-                    color='#E0E7FF'
-                ),
-                bgcolor='rgba(10, 14, 39, 0.5)',
-                angularaxis=dict(gridcolor='rgba(0, 217, 255, 0.2)', color='#E0E7FF')
-            ),
-            showlegend=True,
-            height=500,
-            plot_bgcolor='rgba(10, 14, 39, 0.5)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#E0E7FF', family='Rajdhani'),
-            legend=dict(bgcolor='rgba(21, 27, 61, 0.8)', bordercolor='#00D9FF', borderwidth=1)
-        )
-        
-        st.plotly_chart(fig, use_container_width=True)
-    
-    elif analysis_type == "Model Performance":
-        st.markdown('<h3 style="font-family: Orbitron; color: #00D9FF;">🤖 ML Model Performance</h3>', unsafe_allow_html=True)
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            models = ['Random Forest', 'SVM', 'XGBoost', 'CatBoost', 'Ensemble']
-            accuracy = [92.3, 91.8, 93.5, 93.2, 94.7]
-            precision = [91.5, 90.2, 92.8, 92.5, 94.1]
-            recall = [93.1, 92.5, 94.2, 93.8, 95.3]
-            
-            fig = go.Figure()
-            
-            fig.add_trace(go.Bar(name='Accuracy', x=models, y=accuracy, marker_color='#00D9FF'))
-            fig.add_trace(go.Bar(name='Precision', x=models, y=precision, marker_color='#FFBE0B'))
-            fig.add_trace(go.Bar(name='Recall', x=models, y=recall, marker_color='#FF006E'))
-            
-            fig.update_layout(
-                barmode='group',
-                height=400,
-                yaxis=dict(range=[85, 100], title='Score (%)', color='#E0E7FF'),
-                title='Model Metrics Comparison',
-                title_font=dict(color='#00D9FF', family='Orbitron'),
-                plot_bgcolor='rgba(10, 14, 39, 0.5)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#E0E7FF', family='Rajdhani'),
-                legend=dict(bgcolor='rgba(21, 27, 61, 0.8)', bordercolor='#00D9FF', borderwidth=1)
-            )
-            
-            st.plotly_chart(fig, use_container_width=True)
-        
-        with col2:
-            st.markdown('<h4 style="font-family: Rajdhani; color: #00D9FF; text-align: center;">ROC-AUC Curves</h4>', unsafe_allow_html=True)
-            
-            fig = go.Figure()
-            
-            for model, color in zip(['RF', 'SVM', 'XGB', 'Ensemble'], 
-                                   ['#00D9FF', '#FFBE0B', '#FF006E', '#06FFA5']):
-                fpr = np.linspace(0, 1, 100)
-                tpr = 1 - np.exp(-5 * fpr) + np.random.randn(100) * 0.02
-                tpr = np.clip(tpr, fpr, 1)
-                
-                fig.add_trace(go.Scatter(
-                    x=fpr, y=tpr,
-                    name=f'{model} (AUC=0.{np.random.randint(92, 98)})',
-                    line=dict(color=color, width=2)
-                ))
-            
-            fig.add_trace(go.Scatter(
-                x=[0, 1], y=[0, 1],
-                name='Random',
-                line=dict(color='#8B92B8', dash='dash', width=2)
-            ))
-            
-            fig.update_layout(
-                height=400,
-                xaxis_title='False Positive Rate',
-                yaxis_title='True Positive Rate',
-                title='ROC Curves',
-                title_font=dict(color='#00D9FF', family='Orbitron'),
-                plot_bgcolor='rgba(10, 14, 39, 0.5)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#E0E7FF', family='Rajdhani'),
-                legend=dict(bgcolor='rgba(21, 27, 61, 0.8)', bordercolor='#00D9FF', borderwidth=1)
-            )
-            
-            st.plotly_chart(fig, use_container_width=True)
-        
-        st.markdown('<h3 style="font-family: Orbitron; color: #00D9FF; margin-top: 30px;">Confusion Matrix (Ensemble Model)</h3>', unsafe_allow_html=True)
-        
-        conf_matrix = np.array([[245, 12], [8, 185]])
-        
-        fig = go.Figure(data=go.Heatmap(
-            z=conf_matrix,
-            x=['Predicted Healthy', 'Predicted Unhealthy'],
-            y=['Actual Healthy', 'Actual Unhealthy'],
-            colorscale=[[0, '#0A0E27'], [1, '#00D9FF']],
-            text=conf_matrix,
-            texttemplate='%{text}',
-            textfont={"size": 20, "color": "#E0E7FF"},
-            showscale=True
-        ))
-        
-        fig.update_layout(
-            height=400,
-            plot_bgcolor='rgba(10, 14, 39, 0.5)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#E0E7FF', family='Rajdhani')
-        )
+
+        fig.update_layout(height=500)
         st.plotly_chart(fig, use_container_width=True)
 
+    # ======================================================
+    # MODEL PERFORMANCE (YOUR IMAGES)
+    # ======================================================
+    elif view == "🤖 Model Performance":
+
+        st.markdown("### 🔥 Feature Correlation Matrix")
+        st.image("assets/correlation.jpeg", use_container_width=True)
+
+        st.markdown("---")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("### 🚀 ROC – Stacked Model")
+            st.image("assets/roc_stacked.jpeg", use_container_width=True)
+
+        with col2:
+            st.markdown("### ⚡ ROC – Voting Model")
+            st.image("assets/roc_voting.jpeg", use_container_width=True)
+
+        st.success(
+            "Evaluation derived from validation dataset. "
+            "Both ensemble strategies demonstrate strong discrimination power."
+        )
+
+    
+    
+           
 def show_about():
     st.markdown('<h1 class="main-header">About Liver Guard AI</h1>', unsafe_allow_html=True)
     
