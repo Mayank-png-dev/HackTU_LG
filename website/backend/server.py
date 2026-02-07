@@ -109,3 +109,4 @@ def predict(age: int, gender: str, height: float, weight: float):
         },
         "sensor": sensor
     }
+
