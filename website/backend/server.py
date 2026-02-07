@@ -13,11 +13,11 @@ scaler = joblib.load("scaler.pkl")
 
 app = FastAPI()
 
-ESP32_IP = "http://172.25.90.172/read"   # change if needed
+ESP32_IP = "http://172.25.90.172/read"  
 
 
 # -----------------------
-# Yellowness index logic (copied from notebook)
+# Yellowness index logic
 # -----------------------
 def compute_yellowness(r, g, b, c):
     rgb = np.array([[r, g, b]], dtype=float)
@@ -95,8 +95,17 @@ def predict(age: int, gender: str, height: float, weight: float):
     # Ensemble probability (average of model probabilities)
     ensemble_prob = float((p_vote + p_stack) / 2)
 
-    risk = "High" if ensemble_prob >= 0.5 else "Low"
-    confidence = int(round(ensemble_prob * 100))
+    pred = locals().get("pred", ensemble_prob * 10.0)
+    
+    if pred < 6.0:
+        risk = "Low"
+    elif pred < 7.8:
+        risk = "Medium"
+    else:
+        risk = "High"
+        
+    confidence = int(round(max(0.0, min(100.0, (pred / 10.0) * 100.0))))
+    
 
     return {
         "risk": risk,
@@ -109,4 +118,3 @@ def predict(age: int, gender: str, height: float, weight: float):
         },
         "sensor": sensor
     }
-
